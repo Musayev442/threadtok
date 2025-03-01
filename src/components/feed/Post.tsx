@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import UserAvatar from '../ui/UserAvatar';
@@ -6,7 +5,7 @@ import PostActions from './PostActions';
 import { formatDistanceToNow } from 'date-fns';
 
 export interface PostType {
-  id: number;
+  id: number | string;
   user: {
     id: number;
     username: string;
@@ -26,6 +25,12 @@ export interface PostType {
     reposts: number;
   };
   isReply?: boolean;
+  
+  // For backward compatibility with Explore.tsx
+  likes?: number;
+  comments?: number;
+  reposts?: number;
+  mediaType?: string;
 }
 
 interface PostProps {

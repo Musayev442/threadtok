@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import UserAvatar from '@/components/ui/UserAvatar';
 import Thread from '@/components/feed/Thread';
 import { PostType } from '@/components/feed/Post';
+import { format } from 'date-fns';
 
 // Mock data for the explore page
 const trendingTopics = [
@@ -30,34 +31,43 @@ const discoverUsers = [
 const mockTopThreads: { mainPost: PostType; replies: PostType[] }[] = [
   {
     mainPost: {
-      id: "t1",
+      id: 1,
       user: {
+        id: 1,
         username: "jack_designer",
         name: "Jack Wilson",
         avatar: "https://source.unsplash.com/random/150x150/?portrait-6"
       },
       content: "Just released a new UI kit for social media apps with dark mode support. What do you think?",
-      media: "https://source.unsplash.com/random/600x400/?ui-design",
-      createdAt: "2h",
-      likes: 482,
-      comments: 56,
-      reposts: 32
+      media: {
+        type: "image",
+        url: "https://source.unsplash.com/random/600x400/?ui-design"
+      },
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      stats: {
+        likes: 482,
+        comments: 56,
+        reposts: 32
+      }
     },
     replies: []
   },
   {
     mainPost: {
-      id: "t2",
+      id: 2,
       user: {
+        id: 2,
         username: "sarah_dev",
         name: "Sarah Martinez",
         avatar: "https://source.unsplash.com/random/150x150/?portrait-7"
       },
       content: "The future of frontend is here. Started learning the new React 19 features and I'm blown away!",
-      createdAt: "3h",
-      likes: 327,
-      comments: 42,
-      reposts: 21
+      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+      stats: {
+        likes: 327,
+        comments: 42,
+        reposts: 21
+      }
     },
     replies: []
   }
@@ -65,34 +75,52 @@ const mockTopThreads: { mainPost: PostType; replies: PostType[] }[] = [
 
 const mockVideoReplies: PostType[] = [
   {
-    id: "v1",
+    id: 3,
     user: {
+      id: 3,
       username: "tech_tutorials",
       name: "Tech Tutorials",
       avatar: "https://source.unsplash.com/random/150x150/?portrait-8"
     },
     content: "Quick tutorial on how to implement infinite scroll in React",
-    media: "https://source.unsplash.com/random/600x400/?coding",
-    mediaType: "video",
-    createdAt: "5h",
-    likes: 723,
-    comments: 94,
-    reposts: 57
+    media: {
+      type: "video",
+      url: "https://source.unsplash.com/random/600x400/?coding"
+    },
+    mediaType: "video", // For backward compatibility
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    stats: {
+      likes: 723,
+      comments: 94,
+      reposts: 57
+    },
+    likes: 723, // For backward compatibility
+    comments: 94, // For backward compatibility
+    reposts: 57 // For backward compatibility
   },
   {
-    id: "v2",
+    id: 4,
     user: {
+      id: 4,
       username: "design_daily",
       name: "Design Daily",
       avatar: "https://source.unsplash.com/random/150x150/?portrait-9"
     },
     content: "How to create a glass morphism effect with Tailwind CSS",
-    media: "https://source.unsplash.com/random/600x400/?design",
-    mediaType: "video",
-    createdAt: "7h",
-    likes: 518,
-    comments: 63,
-    reposts: 38
+    media: {
+      type: "video",
+      url: "https://source.unsplash.com/random/600x400/?design"
+    },
+    mediaType: "video", // For backward compatibility
+    createdAt: new Date(Date.now() - 7 * 60 * 60 * 1000), // 7 hours ago
+    stats: {
+      likes: 518,
+      comments: 63,
+      reposts: 38
+    },
+    likes: 518, // For backward compatibility
+    comments: 63, // For backward compatibility
+    reposts: 38 // For backward compatibility
   }
 ];
 
@@ -101,6 +129,12 @@ const Explore: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('All');
 
   const filters = ['All', 'Threads', 'Users', 'Videos', 'Images'];
+
+  // Helper function to format Date objects for display
+  const formatTimeAgo = (date: Date): string => {
+    const hours = Math.floor((Date.now() - date.getTime()) / (60 * 60 * 1000));
+    return `${hours}h`;
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-threadtok-background text-white">
@@ -175,7 +209,7 @@ const Explore: React.FC = () => {
           
           <div className="space-y-4">
             {mockTopThreads.map((thread) => (
-              <Thread key={thread.mainPost.id} mainPost={thread.mainPost} replies={thread.replies} />
+              <Thread key={thread.mainPost.id.toString()} mainPost={thread.mainPost} replies={thread.replies} />
             ))}
           </div>
         </section>
@@ -193,7 +227,7 @@ const Explore: React.FC = () => {
           <div className="grid grid-cols-1 gap-4">
             {mockVideoReplies.map((video) => (
               <div 
-                key={video.id}
+                key={video.id.toString()}
                 className="glass-card rounded-xl p-4 hover:bg-threadtok-card/90 transition-app cursor-pointer"
               >
                 <div className="flex items-start space-x-3">
@@ -201,14 +235,14 @@ const Explore: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold">{video.user.name}</h3>
-                      <span className="text-xs text-gray-400">{video.createdAt}</span>
+                      <span className="text-xs text-gray-400">{formatTimeAgo(video.createdAt)}</span>
                     </div>
                     <p className="text-sm text-gray-300 mb-2">@{video.user.username}</p>
                     <p className="mb-3">{video.content}</p>
                     
                     <div 
                       className="w-full h-48 rounded-lg bg-cover bg-center relative"
-                      style={{ backgroundImage: `url(${video.media})` }}
+                      style={{ backgroundImage: `url(${video.media?.url})` }}
                     >
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="bg-black/50 p-3 rounded-full">
@@ -218,9 +252,9 @@ const Explore: React.FC = () => {
                     </div>
                     
                     <div className="flex items-center mt-3 text-gray-400 text-sm space-x-4">
-                      <span>{video.likes} likes</span>
-                      <span>{video.comments} comments</span>
-                      <span>{video.reposts} reposts</span>
+                      <span>{video.stats.likes} likes</span>
+                      <span>{video.stats.comments} comments</span>
+                      <span>{video.stats.reposts} reposts</span>
                     </div>
                   </div>
                 </div>
