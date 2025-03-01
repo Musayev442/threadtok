@@ -1,15 +1,15 @@
 
 import React, { useState, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
-import BottomNav from '@/components/layout/BottomNav';
 import { 
   Heart, MessageCircle, Share2, ChevronLeft, 
-  Music, Volume2, VolumeX
+  Music, Volume2, VolumeX, Home, Search, PlusSquare, User
 } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { PostType } from '@/components/feed/Post';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const exploreVideos: PostType[] = [
   {
@@ -188,6 +188,40 @@ const Explore: React.FC = () => {
     };
   }, []);
 
+  // Navigation items for the bottom bar
+  const navItems = [
+    {
+      icon: Home,
+      label: 'Home',
+      path: '/',
+      id: 'home'
+    },
+    {
+      icon: Search,
+      label: 'Explore',
+      path: '/explore',
+      id: 'explore'
+    },
+    {
+      icon: PlusSquare,
+      label: 'Create',
+      path: '/create',
+      id: 'create'
+    },
+    {
+      icon: MessageCircle,
+      label: 'Messages',
+      path: '/messages',
+      id: 'messages'
+    },
+    {
+      icon: User,
+      label: 'Profile',
+      path: '/profile',
+      id: 'profile'
+    }
+  ];
+
   return (
     <div className="flex flex-col h-screen bg-threadtok-background text-white overflow-hidden">
       <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" hideStories={true} />
@@ -224,30 +258,62 @@ const Explore: React.FC = () => {
                 </button>
               </div>
               
-              <div className="absolute bottom-24 left-4 right-16 z-20">
-                <div className="flex items-center mb-2">
-                  <UserAvatar 
-                    src={video.user.avatar} 
-                    alt={video.user.name} 
-                    size="sm" 
-                    className="mr-2"
-                  />
-                  <div className="flex items-center">
-                    <span className="font-semibold mr-1">{video.user.username}</span>
-                    {video.user.verified && (
-                      <svg className="h-4 w-4 text-threadtok-accent fill-current" viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                      </svg>
-                    )}
+              {/* Integrated bottom content with navigation */}
+              <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 to-transparent pt-12 pb-2">
+                <div className="px-4 mb-2">
+                  <div className="flex items-center mb-2">
+                    <UserAvatar 
+                      src={video.user.avatar} 
+                      alt={video.user.name} 
+                      size="sm" 
+                      className="mr-2"
+                    />
+                    <div className="flex items-center">
+                      <span className="font-semibold mr-1">{video.user.username}</span>
+                      {video.user.verified && (
+                        <svg className="h-4 w-4 text-threadtok-accent fill-current" viewBox="0 0 24 24">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                        </svg>
+                      )}
+                    </div>
+                    <button className="ml-auto bg-threadtok-accent px-3 py-1 rounded-full text-xs font-medium">
+                      Follow
+                    </button>
                   </div>
-                  <button className="ml-auto bg-threadtok-accent px-3 py-1 rounded-full text-xs font-medium">
-                    Follow
-                  </button>
+                  <p className="text-sm text-white/90 mb-2">{video.content}</p>
+                  <div className="flex items-center text-xs text-white/70 mb-3">
+                    <Music className="h-3 w-3 mr-1" />
+                    <span>Original sound - {video.user.name}</span>
+                  </div>
                 </div>
-                <p className="text-sm text-white/90 mb-3">{video.content}</p>
-                <div className="flex items-center text-xs text-white/70">
-                  <Music className="h-3 w-3 mr-1" />
-                  <span>Original sound - {video.user.name}</span>
+                
+                {/* Bottom Navigation */}
+                <div className="border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-between px-6">
+                    {navItems.map((item) => {
+                      const isActive = item.id === 'explore';
+                      const IconComponent = item.icon;
+                      
+                      return (
+                        <Link
+                          key={item.id}
+                          to={item.path}
+                          className={cn(
+                            "flex flex-col items-center py-1.5 rounded-lg transition-all",
+                            isActive 
+                              ? "text-threadtok-accent" 
+                              : "text-gray-400 hover:text-white"
+                          )}
+                        >
+                          <IconComponent className={cn(
+                            "h-6 w-6 mb-1",
+                            isActive && "text-threadtok-accent"
+                          )} />
+                          <span className="text-xs">{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               
@@ -365,8 +431,6 @@ const Explore: React.FC = () => {
           </div>
         ))}
       </main>
-      
-      <BottomNav activePage="explore" className="z-50" />
     </div>
   );
 };
