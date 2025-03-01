@@ -1,9 +1,14 @@
+
 import React from 'react';
 import { Bell, Search } from "lucide-react";
 import StoryCircle from '../story/StoryCircle';
+import { useLocation } from 'react-router-dom';
+
 interface NavbarProps {
   className?: string;
+  hideStories?: boolean;
 }
+
 const mockStories = [{
   id: 1,
   username: "alex_design",
@@ -37,8 +42,10 @@ const mockStories = [{
   username: "tech_lisa",
   viewed: true
 }];
+
 const Navbar: React.FC<NavbarProps> = ({
-  className
+  className,
+  hideStories = false
 }) => {
   return <header className="sticky top-0 z-40 w-full backdrop-blur-lg bg-threadtok-background/80 border-b border-threadtok-border">
       <div className="w-full max-w-screen-md mx-auto px-4">
@@ -54,12 +61,15 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
         
-        <div className="stories-container py-[12px]">
-          <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-2 py-[2px]">
-            {mockStories.map(story => <StoryCircle key={story.id} username={story.username} viewed={story.viewed} />)}
+        {!hideStories && (
+          <div className="stories-container py-[12px]">
+            <div className="flex overflow-x-auto hide-scrollbar gap-4 pb-2 py-[2px]">
+              {mockStories.map(story => <StoryCircle key={story.id} username={story.username} viewed={story.viewed} />)}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </header>;
 };
+
 export default Navbar;

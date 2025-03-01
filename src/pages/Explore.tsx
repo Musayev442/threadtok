@@ -1,17 +1,15 @@
-
 import React, { useState, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
 import { 
   Heart, MessageCircle, Share2, ChevronLeft, 
-  Music, Volume2, VolumeX, User
+  Music, Volume2, VolumeX
 } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { PostType } from '@/components/feed/Post';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-// Mock video data for the Reels-like experience
 const exploreVideos: PostType[] = [
   {
     id: 1,
@@ -27,7 +25,7 @@ const exploreVideos: PostType[] = [
       type: "video",
       url: "https://source.unsplash.com/random/600x900/?dance"
     },
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
     stats: {
       likes: 12482,
       comments: 356,
@@ -47,7 +45,7 @@ const exploreVideos: PostType[] = [
       type: "video",
       url: "https://source.unsplash.com/random/600x900/?technology"
     },
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
     stats: {
       likes: 8921,
       comments: 243,
@@ -68,7 +66,7 @@ const exploreVideos: PostType[] = [
       type: "video",
       url: "https://source.unsplash.com/random/600x900/?bali"
     },
-    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
     stats: {
       likes: 15723,
       comments: 432,
@@ -88,7 +86,7 @@ const exploreVideos: PostType[] = [
       type: "video",
       url: "https://source.unsplash.com/random/600x900/?fitness"
     },
-    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
     stats: {
       likes: 9432,
       comments: 267,
@@ -108,7 +106,7 @@ const exploreVideos: PostType[] = [
       type: "video",
       url: "https://source.unsplash.com/random/600x900/?pasta"
     },
-    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000), // 18 hours ago
+    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
     stats: {
       likes: 7821,
       comments: 198,
@@ -123,7 +121,6 @@ const Explore: React.FC = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  // Format large numbers in a readable way (e.g., 12.5K)
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
@@ -133,7 +130,6 @@ const Explore: React.FC = () => {
     return num.toString();
   };
 
-  // Handle swiping to next video
   const handleSwipe = (direction: 'up' | 'down' | 'left' | 'right') => {
     if (direction === 'up' && activeVideoIndex < exploreVideos.length - 1) {
       setActiveVideoIndex(activeVideoIndex + 1);
@@ -148,7 +144,6 @@ const Explore: React.FC = () => {
     }
   };
 
-  // Handle video visibility changes
   React.useEffect(() => {
     videoRefs.current.forEach((video, index) => {
       if (video) {
@@ -164,9 +159,8 @@ const Explore: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-threadtok-background text-white overflow-hidden">
-      <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" />
+      <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" hideStories={true} />
       
-      {/* Full screen video feed */}
       <main className="flex-1 w-full h-full relative">
         {exploreVideos.map((video, index) => (
           <div 
@@ -176,7 +170,6 @@ const Explore: React.FC = () => {
               index === activeVideoIndex ? "opacity-100 z-10" : "opacity-0 z-0"
             )}
           >
-            {/* Video */}
             <div className="h-full w-full bg-threadtok-background">
               <video
                 ref={el => videoRefs.current[index] = el}
@@ -188,10 +181,8 @@ const Explore: React.FC = () => {
                 onClick={() => setIsMuted(!isMuted)}
               />
               
-              {/* Overlay gradient for better text visibility */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 pointer-events-none" />
               
-              {/* Video controls */}
               <div className="absolute top-4 right-4 z-20">
                 <button 
                   onClick={() => setIsMuted(!isMuted)}
@@ -201,7 +192,6 @@ const Explore: React.FC = () => {
                 </button>
               </div>
               
-              {/* User info and caption */}
               <div className="absolute bottom-24 left-4 right-16 z-20">
                 <div className="flex items-center mb-2">
                   <UserAvatar 
@@ -229,7 +219,6 @@ const Explore: React.FC = () => {
                 </div>
               </div>
               
-              {/* Interaction buttons */}
               <div className="absolute bottom-24 right-2 z-20 flex flex-col items-center space-y-6">
                 <div className="flex flex-col items-center">
                   <button className="p-2 text-white hover:text-threadtok-accent transition-colors">
@@ -264,7 +253,6 @@ const Explore: React.FC = () => {
                 </div>
               </div>
               
-              {/* Swipe guides - invisible divs for handling swipe gestures */}
               <div 
                 className="absolute inset-y-0 left-0 w-1/4 z-20 cursor-pointer"
                 onClick={() => handleSwipe('left')}
@@ -283,7 +271,6 @@ const Explore: React.FC = () => {
               />
             </div>
             
-            {/* Post details slide panel */}
             <div className={cn(
               "absolute inset-y-0 right-0 w-3/4 bg-threadtok-background/95 backdrop-blur-lg z-30 transform transition-transform duration-300 ease-in-out border-l border-threadtok-border",
               isDetailsOpen ? "translate-x-0" : "translate-x-full"
@@ -354,7 +341,6 @@ const Explore: React.FC = () => {
           </div>
         ))}
         
-        {/* Video progress indicators */}
         <div className="absolute top-20 inset-x-0 z-40 flex justify-center">
           <div className="flex space-x-1 px-4 py-2">
             {exploreVideos.map((_, index) => (
