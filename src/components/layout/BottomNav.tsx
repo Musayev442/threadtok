@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Search, PlusSquare, MessageSquare, User } from 'lucide-react';
+import { Home, Search, PlusSquare, MessageCircle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
       id: 'create'
     },
     {
-      icon: MessageSquare,
+      icon: MessageCircle,
       label: 'Messages',
       path: '/messages',
       id: 'messages'

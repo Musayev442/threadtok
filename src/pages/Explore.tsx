@@ -1,305 +1,376 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
-import { Search, TrendingUp, Filter, Users, VideoIcon } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  Heart, MessageCircle, Share2, ChevronLeft, 
+  Music, Volume2, VolumeX, User
+} from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
-import Thread from '@/components/feed/Thread';
 import { PostType } from '@/components/feed/Post';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-// Mock data for the explore page
-const trendingTopics = [
-  { id: 1, name: "AI Generated Art", postCount: 2453 },
-  { id: 2, name: "React 19 Release", postCount: 1872 },
-  { id: 3, name: "Remote Work", postCount: 1543 },
-  { id: 4, name: "Web Development", postCount: 1325 },
-  { id: 5, name: "Tailwind CSS", postCount: 1122 },
-  { id: 6, name: "Machine Learning", postCount: 987 },
-];
-
-const discoverUsers = [
-  { id: 1, username: "react_ninja", fullName: "Alex Chen", followers: 12500, avatar: "https://source.unsplash.com/random/150x150/?portrait-1" },
-  { id: 2, username: "design_master", fullName: "Sofia Rodriguez", followers: 9800, avatar: "https://source.unsplash.com/random/150x150/?portrait-2" },
-  { id: 3, username: "code.with.james", fullName: "James Wilson", followers: 8700, avatar: "https://source.unsplash.com/random/150x150/?portrait-3" },
-  { id: 4, username: "ui_sarah", fullName: "Sarah Johnson", followers: 7400, avatar: "https://source.unsplash.com/random/150x150/?portrait-4" },
-  { id: 5, username: "tech_maria", fullName: "Maria Garcia", followers: 6300, avatar: "https://source.unsplash.com/random/150x150/?portrait-5" },
-];
-
-// Mock thread data
-const mockTopThreads: { mainPost: PostType; replies: PostType[] }[] = [
+// Mock video data for the Reels-like experience
+const exploreVideos: PostType[] = [
   {
-    mainPost: {
+    id: 1,
+    user: {
       id: 1,
-      user: {
-        id: 1,
-        username: "jack_designer",
-        name: "Jack Wilson",
-        avatar: "https://source.unsplash.com/random/150x150/?portrait-6"
-      },
-      content: "Just released a new UI kit for social media apps with dark mode support. What do you think?",
-      media: {
-        type: "image",
-        url: "https://source.unsplash.com/random/600x400/?ui-design"
-      },
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      stats: {
-        likes: 482,
-        comments: 56,
-        reposts: 32
-      }
+      username: "dance_master",
+      name: "Sarah Johnson",
+      avatar: "https://source.unsplash.com/random/150x150/?portrait-1",
+      verified: true
     },
-    replies: []
+    content: "Check out this new dance routine! #dancechallenge",
+    media: {
+      type: "video",
+      url: "https://source.unsplash.com/random/600x900/?dance"
+    },
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    stats: {
+      likes: 12482,
+      comments: 356,
+      reposts: 832
+    }
   },
   {
-    mainPost: {
+    id: 2,
+    user: {
       id: 2,
-      user: {
-        id: 2,
-        username: "sarah_dev",
-        name: "Sarah Martinez",
-        avatar: "https://source.unsplash.com/random/150x150/?portrait-7"
-      },
-      content: "The future of frontend is here. Started learning the new React 19 features and I'm blown away!",
-      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-      stats: {
-        likes: 327,
-        comments: 42,
-        reposts: 21
-      }
+      username: "tech_trends",
+      name: "Alex Wong",
+      avatar: "https://source.unsplash.com/random/150x150/?portrait-2"
     },
-    replies: []
-  }
-];
-
-const mockVideoReplies: PostType[] = [
+    content: "The latest AI tech is mind-blowing! 🤯 #technology #futurism",
+    media: {
+      type: "video",
+      url: "https://source.unsplash.com/random/600x900/?technology"
+    },
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    stats: {
+      likes: 8921,
+      comments: 243,
+      reposts: 512
+    }
+  },
   {
     id: 3,
     user: {
       id: 3,
-      username: "tech_tutorials",
-      name: "Tech Tutorials",
-      avatar: "https://source.unsplash.com/random/150x150/?portrait-8"
+      username: "travel_addict",
+      name: "Emma Rodriguez",
+      avatar: "https://source.unsplash.com/random/150x150/?portrait-3",
+      verified: true
     },
-    content: "Quick tutorial on how to implement infinite scroll in React",
+    content: "Paradise found in Bali 🌴 #travelgoals #balilife",
     media: {
       type: "video",
-      url: "https://source.unsplash.com/random/600x400/?coding"
+      url: "https://source.unsplash.com/random/600x900/?bali"
     },
-    mediaType: "video", // For backward compatibility
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
     stats: {
-      likes: 723,
-      comments: 94,
-      reposts: 57
-    },
-    likes: 723, // For backward compatibility
-    comments: 94, // For backward compatibility
-    reposts: 57 // For backward compatibility
+      likes: 15723,
+      comments: 432,
+      reposts: 921
+    }
   },
   {
     id: 4,
     user: {
       id: 4,
-      username: "design_daily",
-      name: "Design Daily",
-      avatar: "https://source.unsplash.com/random/150x150/?portrait-9"
+      username: "fitness_guru",
+      name: "Mark Chen",
+      avatar: "https://source.unsplash.com/random/150x150/?portrait-4"
     },
-    content: "How to create a glass morphism effect with Tailwind CSS",
+    content: "5-minute ab workout you can do anywhere! 💪 #fitness #quickworkout",
     media: {
       type: "video",
-      url: "https://source.unsplash.com/random/600x400/?design"
+      url: "https://source.unsplash.com/random/600x900/?fitness"
     },
-    mediaType: "video", // For backward compatibility
-    createdAt: new Date(Date.now() - 7 * 60 * 60 * 1000), // 7 hours ago
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
     stats: {
-      likes: 518,
-      comments: 63,
-      reposts: 38
+      likes: 9432,
+      comments: 267,
+      reposts: 412
+    }
+  },
+  {
+    id: 5,
+    user: {
+      id: 5,
+      username: "food_lover",
+      name: "Jamie Smith",
+      avatar: "https://source.unsplash.com/random/150x150/?portrait-5"
     },
-    likes: 518, // For backward compatibility
-    comments: 63, // For backward compatibility
-    reposts: 38 // For backward compatibility
+    content: "Homemade pasta is easier than you think! 🍝 #foodie #homecooking",
+    media: {
+      type: "video",
+      url: "https://source.unsplash.com/random/600x900/?pasta"
+    },
+    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000), // 18 hours ago
+    stats: {
+      likes: 7821,
+      comments: 198,
+      reposts: 321
+    }
   }
 ];
 
 const Explore: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  const filters = ['All', 'Threads', 'Users', 'Videos', 'Images'];
-
-  // Helper function to format Date objects for display
-  const formatTimeAgo = (date: Date): string => {
-    const hours = Math.floor((Date.now() - date.getTime()) / (60 * 60 * 1000));
-    return `${hours}h`;
+  // Format large numbers in a readable way (e.g., 12.5K)
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
   };
 
+  // Handle swiping to next video
+  const handleSwipe = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (direction === 'up' && activeVideoIndex < exploreVideos.length - 1) {
+      setActiveVideoIndex(activeVideoIndex + 1);
+      setIsDetailsOpen(false);
+    } else if (direction === 'down' && activeVideoIndex > 0) {
+      setActiveVideoIndex(activeVideoIndex - 1);
+      setIsDetailsOpen(false);
+    } else if (direction === 'left') {
+      setIsDetailsOpen(true);
+    } else if (direction === 'right') {
+      setIsDetailsOpen(false);
+    }
+  };
+
+  // Handle video visibility changes
+  React.useEffect(() => {
+    videoRefs.current.forEach((video, index) => {
+      if (video) {
+        if (index === activeVideoIndex) {
+          video.play().catch(err => console.log('Autoplay failed:', err));
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+    });
+  }, [activeVideoIndex]);
+
   return (
-    <div className="flex flex-col min-h-screen bg-threadtok-background text-white">
-      <Navbar />
+    <div className="flex flex-col h-screen bg-threadtok-background text-white overflow-hidden">
+      <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" />
       
-      <main className="flex-1 w-full max-w-screen-md mx-auto px-4 pb-16">
-        {/* Search and filter */}
-        <div className="sticky top-[72px] z-30 pt-4 pb-2 backdrop-blur-lg bg-threadtok-background/80">
-          <div className="relative mb-4">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-threadtok-accent" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search threads, topics, users..."
-              className="w-full pl-10 pr-4 py-2 bg-threadtok-card border border-threadtok-border rounded-lg focus:ring-1 focus:ring-threadtok-accent focus:outline-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          
-          <ScrollArea className="w-full">
-            <div className="flex space-x-2 pb-2">
-              {filters.map((filter) => (
-                <button
-                  key={filter}
-                  className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-app ${
-                    activeFilter === filter
-                      ? 'bg-threadtok-accent text-white'
-                      : 'bg-threadtok-card text-gray-300 hover:bg-threadtok-muted'
-                  }`}
-                  onClick={() => setActiveFilter(filter)}
+      {/* Full screen video feed */}
+      <main className="flex-1 w-full h-full relative">
+        {exploreVideos.map((video, index) => (
+          <div 
+            key={video.id.toString()}
+            className={cn(
+              "absolute inset-0 h-full w-full transition-opacity duration-500",
+              index === activeVideoIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+            )}
+          >
+            {/* Video */}
+            <div className="h-full w-full bg-threadtok-background">
+              <video
+                ref={el => videoRefs.current[index] = el}
+                src={video.media?.url}
+                className="h-full w-full object-cover"
+                loop
+                muted={isMuted}
+                playsInline
+                onClick={() => setIsMuted(!isMuted)}
+              />
+              
+              {/* Overlay gradient for better text visibility */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 pointer-events-none" />
+              
+              {/* Video controls */}
+              <div className="absolute top-4 right-4 z-20">
+                <button 
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-2 rounded-full bg-black/40 text-white"
                 >
-                  {filter}
+                  {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                 </button>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-        
-        {/* Trending topics */}
-        <section className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-threadtok-accent" />
-              Trending Topics
-            </h2>
-            <button className="p-1.5 rounded-full hover:bg-threadtok-muted transition-app">
-              <Filter className="h-4 w-4 text-gray-400" />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {trendingTopics.map((topic) => (
-              <div 
-                key={topic.id}
-                className="glass-card rounded-xl p-3 hover:bg-threadtok-muted/30 transition-app cursor-pointer"
-              >
-                <p className="font-semibold text-white mb-1">#{topic.name}</p>
-                <p className="text-xs text-gray-400">{topic.postCount.toLocaleString()} posts</p>
               </div>
-            ))}
-          </div>
-        </section>
-        
-        {/* Top threads */}
-        <section className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Top Threads</h2>
-            <button className="text-xs text-threadtok-accent">See All</button>
-          </div>
-          
-          <div className="space-y-4">
-            {mockTopThreads.map((thread) => (
-              <Thread key={thread.mainPost.id.toString()} mainPost={thread.mainPost} replies={thread.replies} />
-            ))}
-          </div>
-        </section>
-        
-        {/* Video replies */}
-        <section className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <VideoIcon className="h-5 w-5 mr-2 text-threadtok-accent" />
-              Most Engaged Video Replies
-            </h2>
-            <button className="text-xs text-threadtok-accent">See All</button>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {mockVideoReplies.map((video) => (
-              <div 
-                key={video.id.toString()}
-                className="glass-card rounded-xl p-4 hover:bg-threadtok-card/90 transition-app cursor-pointer"
-              >
-                <div className="flex items-start space-x-3">
-                  <UserAvatar src={video.user.avatar} alt={video.user.name} size="md" />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">{video.user.name}</h3>
-                      <span className="text-xs text-gray-400">{formatTimeAgo(video.createdAt)}</span>
-                    </div>
-                    <p className="text-sm text-gray-300 mb-2">@{video.user.username}</p>
-                    <p className="mb-3">{video.content}</p>
-                    
-                    <div 
-                      className="w-full h-48 rounded-lg bg-cover bg-center relative"
-                      style={{ backgroundImage: `url(${video.media?.url})` }}
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-black/50 p-3 rounded-full">
-                          <VideoIcon className="h-8 w-8 text-white" />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center mt-3 text-gray-400 text-sm space-x-4">
-                      <span>{video.stats.likes} likes</span>
-                      <span>{video.stats.comments} comments</span>
-                      <span>{video.stats.reposts} reposts</span>
-                    </div>
+              
+              {/* User info and caption */}
+              <div className="absolute bottom-24 left-4 right-16 z-20">
+                <div className="flex items-center mb-2">
+                  <UserAvatar 
+                    src={video.user.avatar} 
+                    alt={video.user.name} 
+                    size="sm" 
+                    className="mr-2"
+                  />
+                  <div className="flex items-center">
+                    <span className="font-semibold mr-1">{video.user.username}</span>
+                    {video.user.verified && (
+                      <svg className="h-4 w-4 text-threadtok-accent fill-current" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                      </svg>
+                    )}
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        
-        {/* Discover users */}
-        <section className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Users className="h-5 w-5 mr-2 text-threadtok-accent" />
-              Discover New Users
-            </h2>
-            <button className="text-xs text-threadtok-accent">See All</button>
-          </div>
-          
-          <div className="space-y-3">
-            {discoverUsers.map((user) => (
-              <div 
-                key={user.id}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-threadtok-muted transition-app cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                  <UserAvatar src={user.avatar} alt={user.fullName} size="md" />
-                  <div>
-                    <p className="font-semibold">{user.fullName}</p>
-                    <p className="text-sm text-gray-400">@{user.username}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-400 mr-3">{user.followers.toLocaleString()} followers</span>
-                  <button className="px-3 py-1 bg-threadtok-accent rounded-full text-sm font-medium hover:bg-threadtok-accent/80 transition-app">
+                  <button className="ml-auto bg-threadtok-accent px-3 py-1 rounded-full text-xs font-medium">
                     Follow
                   </button>
                 </div>
+                <p className="text-sm text-white/90 mb-3">{video.content}</p>
+                <div className="flex items-center text-xs text-white/70">
+                  <Music className="h-3 w-3 mr-1" />
+                  <span>Original sound - {video.user.name}</span>
+                </div>
               </div>
+              
+              {/* Interaction buttons */}
+              <div className="absolute bottom-24 right-2 z-20 flex flex-col items-center space-y-6">
+                <div className="flex flex-col items-center">
+                  <button className="p-2 text-white hover:text-threadtok-accent transition-colors">
+                    <Heart className={cn("h-7 w-7", index % 2 === 1 ? "text-red-500 fill-red-500" : "")} />
+                  </button>
+                  <span className="text-xs mt-1">{formatNumber(video.stats.likes)}</span>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <button className="p-2 text-white hover:text-threadtok-accent transition-colors">
+                    <MessageCircle className="h-7 w-7" />
+                  </button>
+                  <span className="text-xs mt-1">{formatNumber(video.stats.comments)}</span>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <button className="p-2 text-white hover:text-threadtok-accent transition-colors">
+                    <Share2 className="h-7 w-7" />
+                  </button>
+                  <span className="text-xs mt-1">{formatNumber(video.stats.reposts)}</span>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                  <button className="p-2 text-white"
+                    onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                  >
+                    <ChevronLeft className={cn(
+                      "h-7 w-7 transition-transform", 
+                      isDetailsOpen ? "rotate-180" : ""
+                    )} />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Swipe guides - invisible divs for handling swipe gestures */}
+              <div 
+                className="absolute inset-y-0 left-0 w-1/4 z-20 cursor-pointer"
+                onClick={() => handleSwipe('left')}
+              />
+              <div 
+                className="absolute inset-y-0 right-0 w-1/4 z-20 cursor-pointer"
+                onClick={() => handleSwipe('right')}
+              />
+              <div 
+                className="absolute inset-x-0 top-0 h-1/3 z-20 cursor-pointer"
+                onClick={() => handleSwipe('down')}
+              />
+              <div 
+                className="absolute inset-x-0 bottom-0 h-1/3 z-20 cursor-pointer"
+                onClick={() => handleSwipe('up')}
+              />
+            </div>
+            
+            {/* Post details slide panel */}
+            <div className={cn(
+              "absolute inset-y-0 right-0 w-3/4 bg-threadtok-background/95 backdrop-blur-lg z-30 transform transition-transform duration-300 ease-in-out border-l border-threadtok-border",
+              isDetailsOpen ? "translate-x-0" : "translate-x-full"
+            )}>
+              <div className="h-full overflow-y-auto p-4">
+                <button 
+                  className="mb-4 p-2 rounded-full bg-threadtok-muted hover:bg-threadtok-card transition-colors"
+                  onClick={() => setIsDetailsOpen(false)}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <div className="flex items-center mb-6">
+                  <UserAvatar 
+                    src={video.user.avatar} 
+                    alt={video.user.name} 
+                    size="lg" 
+                    className="mr-3"
+                  />
+                  <div>
+                    <div className="flex items-center">
+                      <h3 className="font-semibold">{video.user.name}</h3>
+                      {video.user.verified && (
+                        <svg className="h-4 w-4 text-threadtok-accent fill-current ml-1" viewBox="0 0 24 24">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-400">@{video.user.username}</p>
+                  </div>
+                  <button className="ml-auto bg-threadtok-accent px-4 py-1.5 rounded-full text-sm font-medium">
+                    Follow
+                  </button>
+                </div>
+                
+                <p className="text-lg mb-4">{video.content}</p>
+                
+                <div className="flex items-center justify-between mb-6 text-gray-400 text-sm">
+                  <span>{format(video.createdAt, 'MMM d, yyyy')}</span>
+                  <div className="flex space-x-4">
+                    <span>{formatNumber(video.stats.likes)} likes</span>
+                    <span>{formatNumber(video.stats.comments)} comments</span>
+                  </div>
+                </div>
+                
+                <div className="border-t border-threadtok-border pt-4">
+                  <h4 className="font-semibold mb-4">Comments</h4>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex mb-4">
+                      <UserAvatar 
+                        src={`https://source.unsplash.com/random/150x150/?portrait-${10 + i}`} 
+                        alt={`Commenter ${i}`} 
+                        size="sm" 
+                        className="mr-2 flex-shrink-0"
+                      />
+                      <div>
+                        <div className="flex items-center mb-1">
+                          <span className="font-medium text-sm">username_{i}</span>
+                          <span className="ml-2 text-xs text-gray-500">{i + 1}h ago</span>
+                        </div>
+                        <p className="text-sm">This is an amazing video! Love the content.</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {/* Video progress indicators */}
+        <div className="absolute top-20 inset-x-0 z-40 flex justify-center">
+          <div className="flex space-x-1 px-4 py-2">
+            {exploreVideos.map((_, index) => (
+              <div 
+                key={index}
+                className={cn(
+                  "h-1 rounded-full transition-all",
+                  index === activeVideoIndex ? "w-6 bg-threadtok-accent" : "w-4 bg-white/40"
+                )}
+              />
             ))}
           </div>
-        </section>
+        </div>
       </main>
       
-      <BottomNav activePage="explore" />
+      <BottomNav activePage="explore" className="z-50" />
     </div>
   );
 };
