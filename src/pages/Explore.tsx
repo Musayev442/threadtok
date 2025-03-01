@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
@@ -120,6 +121,8 @@ const Explore: React.FC = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
@@ -144,33 +147,62 @@ const Explore: React.FC = () => {
     }
   };
 
+  // Setup intersection observer to handle video playback based on visibility
   React.useEffect(() => {
-    videoRefs.current.forEach((video, index) => {
-      if (video) {
-        if (index === activeVideoIndex) {
-          video.play().catch(err => console.log('Autoplay failed:', err));
-        } else {
-          video.pause();
-          video.currentTime = 0;
-        }
+    if (!containerRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const videoIndex = Number(entry.target.getAttribute('data-index'));
+          if (entry.isIntersecting) {
+            setActiveVideoIndex(videoIndex);
+            const video = videoRefs.current[videoIndex];
+            if (video) {
+              video.play().catch(err => console.log('Autoplay failed:', err));
+            }
+          } else {
+            const video = videoRefs.current[videoIndex];
+            if (video) {
+              video.pause();
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.6, // Video is considered visible when 60% is in viewport
+        root: containerRef.current
       }
+    );
+
+    // Observe all video containers
+    const videoElements = containerRef.current.querySelectorAll('.video-container');
+    videoElements.forEach(el => {
+      observerRef.current?.observe(el);
     });
-  }, [activeVideoIndex]);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-threadtok-background text-white overflow-hidden">
       <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" hideStories={true} />
       
-      <main className="flex-1 w-full h-full relative">
+      <main 
+        ref={containerRef}
+        className="flex-1 w-full h-full relative overflow-y-auto snap-y snap-mandatory"
+      >
         {exploreVideos.map((video, index) => (
           <div 
             key={video.id.toString()}
-            className={cn(
-              "absolute inset-0 h-full w-full transition-opacity duration-500",
-              index === activeVideoIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-            )}
+            data-index={index}
+            className="video-container h-screen w-full snap-start snap-always"
           >
-            <div className="h-full w-full bg-threadtok-background">
+            <div className="h-full w-full bg-threadtok-background relative">
               <video
                 ref={el => videoRefs.current[index] = el}
                 src={video.media?.url}
@@ -261,99 +293,77 @@ const Explore: React.FC = () => {
                 className="absolute inset-y-0 right-0 w-1/4 z-20 cursor-pointer"
                 onClick={() => handleSwipe('right')}
               />
-              <div 
-                className="absolute inset-x-0 top-0 h-1/3 z-20 cursor-pointer"
-                onClick={() => handleSwipe('down')}
-              />
-              <div 
-                className="absolute inset-x-0 bottom-0 h-1/3 z-20 cursor-pointer"
-                onClick={() => handleSwipe('up')}
-              />
-            </div>
-            
-            <div className={cn(
-              "absolute inset-y-0 right-0 w-3/4 bg-threadtok-background/95 backdrop-blur-lg z-30 transform transition-transform duration-300 ease-in-out border-l border-threadtok-border",
-              isDetailsOpen ? "translate-x-0" : "translate-x-full"
-            )}>
-              <div className="h-full overflow-y-auto p-4">
-                <button 
-                  className="mb-4 p-2 rounded-full bg-threadtok-muted hover:bg-threadtok-card transition-colors"
-                  onClick={() => setIsDetailsOpen(false)}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                
-                <div className="flex items-center mb-6">
-                  <UserAvatar 
-                    src={video.user.avatar} 
-                    alt={video.user.name} 
-                    size="lg" 
-                    className="mr-3"
-                  />
-                  <div>
-                    <div className="flex items-center">
-                      <h3 className="font-semibold">{video.user.name}</h3>
-                      {video.user.verified && (
-                        <svg className="h-4 w-4 text-threadtok-accent fill-current ml-1" viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                        </svg>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-400">@{video.user.username}</p>
-                  </div>
-                  <button className="ml-auto bg-threadtok-accent px-4 py-1.5 rounded-full text-sm font-medium">
-                    Follow
+              
+              <div className={cn(
+                "absolute inset-y-0 right-0 w-3/4 bg-threadtok-background/95 backdrop-blur-lg z-30 transform transition-transform duration-300 ease-in-out border-l border-threadtok-border",
+                isDetailsOpen ? "translate-x-0" : "translate-x-full"
+              )}>
+                <div className="h-full overflow-y-auto p-4">
+                  <button 
+                    className="mb-4 p-2 rounded-full bg-threadtok-muted hover:bg-threadtok-card transition-colors"
+                    onClick={() => setIsDetailsOpen(false)}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
                   </button>
-                </div>
-                
-                <p className="text-lg mb-4">{video.content}</p>
-                
-                <div className="flex items-center justify-between mb-6 text-gray-400 text-sm">
-                  <span>{format(video.createdAt, 'MMM d, yyyy')}</span>
-                  <div className="flex space-x-4">
-                    <span>{formatNumber(video.stats.likes)} likes</span>
-                    <span>{formatNumber(video.stats.comments)} comments</span>
-                  </div>
-                </div>
-                
-                <div className="border-t border-threadtok-border pt-4">
-                  <h4 className="font-semibold mb-4">Comments</h4>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex mb-4">
-                      <UserAvatar 
-                        src={`https://source.unsplash.com/random/150x150/?portrait-${10 + i}`} 
-                        alt={`Commenter ${i}`} 
-                        size="sm" 
-                        className="mr-2 flex-shrink-0"
-                      />
-                      <div>
-                        <div className="flex items-center mb-1">
-                          <span className="font-medium text-sm">username_{i}</span>
-                          <span className="ml-2 text-xs text-gray-500">{i + 1}h ago</span>
-                        </div>
-                        <p className="text-sm">This is an amazing video! Love the content.</p>
+                  
+                  <div className="flex items-center mb-6">
+                    <UserAvatar 
+                      src={video.user.avatar} 
+                      alt={video.user.name} 
+                      size="lg" 
+                      className="mr-3"
+                    />
+                    <div>
+                      <div className="flex items-center">
+                        <h3 className="font-semibold">{video.user.name}</h3>
+                        {video.user.verified && (
+                          <svg className="h-4 w-4 text-threadtok-accent fill-current ml-1" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                          </svg>
+                        )}
                       </div>
+                      <p className="text-sm text-gray-400">@{video.user.username}</p>
                     </div>
-                  ))}
+                    <button className="ml-auto bg-threadtok-accent px-4 py-1.5 rounded-full text-sm font-medium">
+                      Follow
+                    </button>
+                  </div>
+                  
+                  <p className="text-lg mb-4">{video.content}</p>
+                  
+                  <div className="flex items-center justify-between mb-6 text-gray-400 text-sm">
+                    <span>{format(video.createdAt, 'MMM d, yyyy')}</span>
+                    <div className="flex space-x-4">
+                      <span>{formatNumber(video.stats.likes)} likes</span>
+                      <span>{formatNumber(video.stats.comments)} comments</span>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-threadtok-border pt-4">
+                    <h4 className="font-semibold mb-4">Comments</h4>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex mb-4">
+                        <UserAvatar 
+                          src={`https://source.unsplash.com/random/150x150/?portrait-${10 + i}`} 
+                          alt={`Commenter ${i}`} 
+                          size="sm" 
+                          className="mr-2 flex-shrink-0"
+                        />
+                        <div>
+                          <div className="flex items-center mb-1">
+                            <span className="font-medium text-sm">username_{i}</span>
+                            <span className="ml-2 text-xs text-gray-500">{i + 1}h ago</span>
+                          </div>
+                          <p className="text-sm">This is an amazing video! Love the content.</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         ))}
-        
-        <div className="absolute top-20 inset-x-0 z-40 flex justify-center">
-          <div className="flex space-x-1 px-4 py-2">
-            {exploreVideos.map((_, index) => (
-              <div 
-                key={index}
-                className={cn(
-                  "h-1 rounded-full transition-all",
-                  index === activeVideoIndex ? "w-6 bg-threadtok-accent" : "w-4 bg-white/40"
-                )}
-              />
-            ))}
-          </div>
-        </div>
       </main>
       
       <BottomNav activePage="explore" className="z-50" />
