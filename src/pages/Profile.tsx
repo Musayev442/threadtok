@@ -1,23 +1,22 @@
-
 import React, { useState } from 'react';
-import { Heart, Grid, List, Edit, UserPlus, Check, Bookmark } from 'lucide-react';
-import UserAvatar from '@/components/ui/UserAvatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Post, { PostType } from '@/components/feed/Post';
-import Thread from '@/components/feed/Thread';
+import Navbar from '../components/layout/Navbar';
+import BottomNav from '../components/layout/BottomNav';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Edit, Grid, List, MessageCircle, MoreHorizontal, UserPlus } from 'lucide-react';
+import UserAvatar from '../components/ui/UserAvatar';
+import Post, { PostType } from '../components/feed/Post';
 
-// Mock user profile data
-const profileData = {
-  id: 1,
-  username: 'alexjohnson',
+// Mock user data
+const mockUser = {
+  username: 'alex_design',
   name: 'Alex Johnson',
-  bio: 'Digital creator | Photography enthusiast | Travel lover\nExploring the world one click at a time ✨',
-  avatar: 'https://source.unsplash.com/random/200x200/?portrait',
+  bio: 'Digital designer & photographer. Creating visual stories through pixels and perspective. Based in San Francisco 📍',
+  avatar: 'https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?&w=128&h=128&dpr=2&q=80',
+  followers: 5280,
+  following: 420,
   verified: true,
-  followers: 2547,
-  following: 584,
-  posts: 142,
-  isFollowing: false
+  isOwnProfile: false
 };
 
 // Mock posts data
@@ -104,238 +103,140 @@ const mockPosts: PostType[] = [
   }
 ];
 
-// Mock liked posts data - a subset of the posts for this example
-const likedPosts = mockPosts.slice(0, 2);
-// Mock saved posts data - a subset of the posts for this example
-const savedPosts = mockPosts.slice(2);
-
-const ProfilePage: React.FC = () => {
-  const [profile, setProfile] = useState(profileData);
-  const [isGridView, setIsGridView] = useState(true);
+const Profile = () => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('posts');
-
-  const handleFollow = () => {
-    setProfile(prev => ({ 
-      ...prev, 
-      isFollowing: !prev.isFollowing,
-      followers: prev.isFollowing ? prev.followers - 1 : prev.followers + 1
-    }));
-  };
   
-  const formatCount = (count: number): string => {
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
-  };
-
   return (
-    <div className="min-h-screen bg-threadtok-background text-white animate-fade-in">
-      {/* Profile Header */}
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="relative mb-6">
-          {/* Cover Photo Placeholder */}
-          <div className="h-40 bg-gradient-to-r from-threadtok-card to-threadtok-muted rounded-xl overflow-hidden">
-            <div className="w-full h-full bg-threadtok-card opacity-50"></div>
-          </div>
-          
-          {/* Profile Info */}
-          <div className="flex flex-col md:flex-row md:items-end -mt-12 md:-mt-16 px-4">
+    <div className="min-h-screen bg-threadtok-background pb-16">
+      <Navbar hideStories={true} />
+      
+      <main className="max-w-screen-md mx-auto px-4">
+        {/* Profile Header */}
+        <div className="py-6">
+          <div className="flex items-start justify-between mb-4">
             <UserAvatar 
-              src={profile.avatar} 
-              alt={profile.name} 
-              size="xl"
-              className="ring-4 ring-threadtok-background"
+              src={mockUser.avatar} 
+              alt={mockUser.name} 
+              size="xl" 
+              className="border-2 border-threadtok-accent"
             />
             
-            <div className="mt-4 md:mt-0 md:ml-6 md:mb-2 flex-grow">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">{profile.name}</h1>
-                    {profile.verified && (
-                      <svg className="h-5 w-5 text-threadtok-accent fill-current" viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                      </svg>
-                    )}
-                  </div>
-                  <p className="text-gray-400">@{profile.username}</p>
-                </div>
-                
-                <div className="flex gap-2 mt-4 md:mt-0">
-                  <button 
-                    onClick={handleFollow}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-app ${
-                      profile.isFollowing 
-                        ? 'bg-threadtok-secondary text-white' 
-                        : 'bg-threadtok-accent text-white'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1">
-                      {profile.isFollowing ? <Check size={16} /> : <UserPlus size={16} />}
-                      {profile.isFollowing ? 'Following' : 'Follow'}
-                    </span>
-                  </button>
-                  
-                  <button 
-                    className="px-4 py-2 rounded-full bg-threadtok-secondary text-white text-sm font-medium transition-app hover:bg-threadtok-muted"
-                  >
-                    <span className="flex items-center gap-1">
-                      <Edit size={16} />
-                      Edit Profile
-                    </span>
-                  </button>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              {mockUser.isOwnProfile ? (
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Edit className="w-4 h-4" />
+                  Edit Profile
+                </Button>
+              ) : (
+                <Button size="sm" className="bg-threadtok-accent hover:bg-threadtok-accent/90 flex items-center gap-1">
+                  <UserPlus className="w-4 h-4" />
+                  Follow
+                </Button>
+              )}
+              
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <MoreHorizontal className="w-5 h-5" />
+              </Button>
             </div>
           </div>
           
-          {/* Bio */}
-          <div className="mt-4 px-4">
-            <p className="text-white whitespace-pre-line">{profile.bio}</p>
+          <h1 className="text-xl font-bold mb-1">{mockUser.name}</h1>
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
+            <span>@{mockUser.username}</span>
+            {mockUser.verified && (
+              <svg className="h-4 w-4 text-threadtok-accent fill-current" viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+              </svg>
+            )}
           </div>
           
-          {/* Stats */}
-          <div className="flex gap-6 mt-6 px-4 text-sm">
-            <div className="flex items-center gap-1">
-              <span className="font-bold">{formatCount(profile.posts)}</span>
-              <span className="text-gray-400">Posts</span>
+          <p className="text-white/90 mb-4">{mockUser.bio}</p>
+          
+          <div className="flex gap-4 text-sm">
+            <div>
+              <span className="font-semibold">{mockUser.following.toLocaleString()}</span>
+              <span className="text-gray-400 ml-1">Following</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold">{formatCount(profile.followers)}</span>
-              <span className="text-gray-400">Followers</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold">{formatCount(profile.following)}</span>
-              <span className="text-gray-400">Following</span>
+            <div>
+              <span className="font-semibold">{mockUser.followers.toLocaleString()}</span>
+              <span className="text-gray-400 ml-1">Followers</span>
             </div>
           </div>
         </div>
         
-        {/* Content Tabs */}
-        <Tabs defaultValue="posts" className="mt-6" onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between border-b border-threadtok-border pb-2">
-            <TabsList className="bg-transparent">
-              <TabsTrigger 
-                value="posts" 
-                className="data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-threadtok-accent"
-              >
-                Posts
-              </TabsTrigger>
-              <TabsTrigger 
-                value="liked" 
-                className="data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-threadtok-accent"
-              >
-                <Heart size={16} className="mr-1" /> Liked
-              </TabsTrigger>
-              <TabsTrigger 
-                value="saved" 
-                className="data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-threadtok-accent"
-              >
-                <Bookmark size={16} className="mr-1" /> Saved
-              </TabsTrigger>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between mb-2">
+            <TabsList className="bg-threadtok-muted">
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="liked">Liked</TabsTrigger>
+              <TabsTrigger value="saved">Saved</TabsTrigger>
             </TabsList>
             
-            <div className="flex gap-1">
-              <button 
-                onClick={() => setIsGridView(true)}
-                className={`p-2 rounded transition-app ${isGridView ? 'bg-threadtok-secondary' : 'hover:bg-threadtok-card'}`}
+            <div className="flex items-center">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`rounded-full ${viewMode === 'grid' ? 'text-threadtok-accent' : 'text-gray-400'}`}
+                onClick={() => setViewMode('grid')}
               >
-                <Grid size={18} />
-              </button>
-              <button 
-                onClick={() => setIsGridView(false)}
-                className={`p-2 rounded transition-app ${!isGridView ? 'bg-threadtok-secondary' : 'hover:bg-threadtok-card'}`}
+                <Grid className="w-5 h-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`rounded-full ${viewMode === 'list' ? 'text-threadtok-accent' : 'text-gray-400'}`}
+                onClick={() => setViewMode('list')}
               >
-                <List size={18} />
-              </button>
+                <List className="w-5 h-5" />
+              </Button>
             </div>
           </div>
           
-          <TabsContent value="posts" className="mt-4">
-            {isGridView ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <TabsContent value="posts">
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-3 gap-1">
                 {mockPosts.map(post => (
-                  <PostGridItem key={post.id} post={post} />
+                  <div key={post.id} className="aspect-square bg-threadtok-muted rounded-md overflow-hidden">
+                    {post.media && (
+                      post.media.type === 'image' ? (
+                        <img src={post.media.url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="relative w-full h-full bg-threadtok-card flex items-center justify-center">
+                          <MessageCircle className="w-6 h-6 text-threadtok-accent" />
+                        </div>
+                      )
+                    )}
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {mockPosts.map(post => (
-                  <Thread key={post.id} mainPost={post} />
+                  <Post key={post.id} post={post} />
                 ))}
               </div>
             )}
           </TabsContent>
           
-          <TabsContent value="liked" className="mt-4">
-            {isGridView ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {likedPosts.map(post => (
-                  <PostGridItem key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {likedPosts.map(post => (
-                  <Thread key={post.id} mainPost={post} />
-                ))}
-              </div>
-            )}
+          <TabsContent value="liked">
+            <div className="text-center py-8 text-gray-400">
+              No liked posts yet
+            </div>
           </TabsContent>
           
-          <TabsContent value="saved" className="mt-4">
-            {isGridView ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {savedPosts.map(post => (
-                  <PostGridItem key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {savedPosts.map(post => (
-                  <Thread key={post.id} mainPost={post} />
-                ))}
-              </div>
-            )}
+          <TabsContent value="saved">
+            <div className="text-center py-8 text-gray-400">
+              No saved posts yet
+            </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
-  );
-};
-
-const PostGridItem: React.FC<{ post: PostType }> = ({ post }) => {
-  return (
-    <div className="relative aspect-square rounded-lg overflow-hidden bg-threadtok-card hover:scale-[0.98] transition-app cursor-pointer group">
-      {post.media ? (
-        post.media.type === 'image' ? (
-          <img 
-            src={post.media.url} 
-            alt={post.content} 
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <video 
-            src={post.media.url}
-            className="w-full h-full object-cover"
-            poster="/placeholder.svg"
-          />
-        )
-      ) : (
-        <div className="w-full h-full flex items-center justify-center p-3 bg-threadtok-muted">
-          <p className="text-white text-sm line-clamp-4 text-center">{post.content}</p>
-        </div>
-      )}
+      </main>
       
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-app">
-        <div className="flex items-center justify-between text-white text-xs">
-          <div className="flex items-center gap-1">
-            <Heart size={12} />
-            <span>{post.stats.likes}</span>
-          </div>
-          <span className="text-xs">{new Date(post.createdAt).toLocaleDateString()}</span>
-        </div>
-      </div>
+      <BottomNav activePage="profile" />
     </div>
   );
 };
 
-export default ProfilePage;
+export default Profile;
