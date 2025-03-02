@@ -246,7 +246,7 @@ const CreatePost = () => {
             
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <getVisibilityIcon />
+                {getVisibilityIcon()}
                 <Label className="text-white">Visibility</Label>
               </div>
               <DropdownMenu>
