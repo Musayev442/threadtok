@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Search, Mic, Image, Send, ArrowLeft, 
@@ -45,7 +44,7 @@ const mockConversations = [
     id: '4',
     name: 'Jamie Wilson',
     avatar: 'https://i.pravatar.cc/150?img=4',
-    lastMessage: 'Let's meet tomorrow!',
+    lastMessage: 'Let\'s meet tomorrow!',
     timestamp: '2h ago',
     unread: 0,
     online: false
@@ -100,7 +99,7 @@ const mockMessages = [
   {
     id: 'm2',
     senderId: '1',
-    text: 'I'm doing great! Just finished that project we talked about.',
+    text: 'I\'m doing great! Just finished that project we talked about.',
     timestamp: '10:04 AM',
     status: 'sent'
   },
