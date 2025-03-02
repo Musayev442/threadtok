@@ -87,8 +87,20 @@ const mockConversations = [
   }
 ];
 
+// Define the Message type to match the ChatMessage component's expected props
+interface Message {
+  id: string;
+  senderId: string;
+  text?: string;
+  timestamp: string;
+  status: 'sent' | 'delivered' | 'read';
+  type?: 'text' | 'image' | 'voice';
+  imageUrl?: string;
+  duration?: string;
+}
+
 // Mock data for chat messages
-const mockMessages = [
+const mockMessages: Message[] = [
   {
     id: 'm1',
     senderId: 'user',
@@ -160,7 +172,7 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState(mockMessages);
+  const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -200,7 +212,7 @@ const Messages = () => {
         recordingTimerRef.current = null;
       }
 
-      const newMessage = {
+      const newMessage: Message = {
         id: `m${messages.length + 1}`,
         senderId: 'user',
         type: 'voice',
@@ -218,7 +230,7 @@ const Messages = () => {
       });
     } else {
       // Handle text message
-      const newMessage = {
+      const newMessage: Message = {
         id: `m${messages.length + 1}`,
         senderId: 'user',
         text: messageText,

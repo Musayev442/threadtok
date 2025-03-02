@@ -3,7 +3,7 @@ import React from 'react';
 import { Check, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Message {
+export interface Message {
   id: string;
   senderId: string;
   text?: string;
