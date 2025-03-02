@@ -1,6 +1,4 @@
-
 import React, { useState, useRef } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import { 
   Heart, MessageCircle, Share2, ChevronLeft, 
   Music, Volume2, VolumeX, Home, Search, PlusSquare, User
@@ -147,7 +145,6 @@ const Explore: React.FC = () => {
     }
   };
 
-  // Setup intersection observer to handle video playback based on visibility
   React.useEffect(() => {
     if (!containerRef.current) return;
 
@@ -170,12 +167,11 @@ const Explore: React.FC = () => {
         });
       },
       {
-        threshold: 0.6, // Video is considered visible when 60% is in viewport
+        threshold: 0.6,
         root: containerRef.current
       }
     );
 
-    // Observe all video containers
     const videoElements = containerRef.current.querySelectorAll('.video-container');
     videoElements.forEach(el => {
       observerRef.current?.observe(el);
@@ -188,7 +184,6 @@ const Explore: React.FC = () => {
     };
   }, []);
 
-  // Navigation items for the bottom bar
   const navItems = [
     {
       icon: Home,
@@ -224,8 +219,6 @@ const Explore: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-threadtok-background text-white overflow-hidden">
-      <Navbar className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent" hideStories={true} />
-      
       <main 
         ref={containerRef}
         className="flex-1 w-full h-full relative overflow-y-auto snap-y snap-mandatory"
@@ -258,7 +251,6 @@ const Explore: React.FC = () => {
                 </button>
               </div>
               
-              {/* Integrated bottom content with navigation */}
               <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 to-transparent pt-12 pb-2">
                 <div className="px-4 mb-2">
                   <div className="flex items-center mb-2">
@@ -287,7 +279,6 @@ const Explore: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Bottom Navigation */}
                 <div className="border-t border-white/10 pt-2">
                   <div className="flex items-center justify-between px-6">
                     {navItems.map((item) => {
